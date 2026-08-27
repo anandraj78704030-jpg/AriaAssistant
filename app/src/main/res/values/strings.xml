@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Pixie</string>
+    <string name="accessibility_service_description">Lets Pixie read what\'s on your screen so she can find and tap options you ask for by voice — like "select the second option." She only reads the screen when you give a command; she does not run in the background otherwise.</string>
+</resources>

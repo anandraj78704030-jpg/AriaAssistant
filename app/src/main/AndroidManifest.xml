@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- STAGE 1 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.microphone" android:required="true" />
+
+    <!-- STAGE 4: real Android actions.
+         WRITE_SETTINGS is a "special" permission — declared here, but the
+         user must also explicitly grant it via Settings (BrightnessAction
+         handles sending them there; it's never silently assumed granted). -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+    <!-- Some OEM Clock apps (ColorOS/Realme/Oppo, and others) require this
+         even though standard Android's AlarmClock.ACTION_SET_ALARM doesn't. -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
+
+    <!-- STAGE 10: hands-free wake word runs as a foreground service, which
+         requires these on modern Android — plus the persistent notification
+         it shows while listening. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <!-- Android 11+ requires declaring which other apps/intents Aria can
+         see and launch — without this, getLaunchIntentForPackage() would
+         return null even for installed apps. -->
+    <queries>
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.whatsapp" />
+        <package android:name="com.instagram.android" />
+        <package android:name="com.android.chrome" />
+        <package android:name="com.google.android.gm" />
+        <package android:name="com.google.android.apps.photos" />
+        <package android:name="com.spotify.music" />
+        <package android:name="com.google.android.apps.maps" />
+        <intent>
+            <action android:name="android.media.action.STILL_IMAGE_CAMERA" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SET_ALARM" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Pixie"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Aria">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="Pixie"
+            android:theme="@style/Theme.Aria">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- STAGE 5: screen understanding. Off by default — the user must
+             explicitly enable it in Android's Accessibility settings, the
+             same way ScreenReader.requestEnable() sends them there. -->
+        <service
+            android:name=".accessibility.AriaAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice.config"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- STAGE 10: hands-free wake word. User must explicitly turn this
+             on in the app — never starts on its own. -->
+        <service
+            android:name=".voice.WakeWordService"
+            android:foregroundServiceType="microphone"
+            android:exported="false" />
+    </application>
+</manifest>
